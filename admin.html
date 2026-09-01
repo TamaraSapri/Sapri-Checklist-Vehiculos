@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAPRI · Dashboard Administrador</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#17202a;--muted:#667085;--line:#d8dee6;--nav:#111827;--blue:#174ea6;--green:#17803d;--yellow:#b7791f;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--nav);color:#fff;padding:18px 22px;position:sticky;top:0;z-index:5}
+header h1{font-size:21px;margin:0}.sub{opacity:.76;font-size:12px;margin-top:4px}
+main{max-width:1280px;margin:20px auto;padding:0 14px 42px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.toolbar>div{min-width:170px;flex:1}
+label{display:block;font-size:12px;font-weight:800;margin-bottom:5px}input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#e8edf3;color:#18212b}.danger{background:var(--red);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}.kpi{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}.kpi .n{font-size:27px;font-weight:900}.kpi .l{font-size:11px;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{background:#e9edf2}.tab.active{background:var(--nav);color:#fff}
+.panel{display:none}.panel.active{display:block}
+.tablewrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px;max-height:520px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px 10px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#f8fafc;z-index:1}
+.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.BAJO{background:#dcfce7;color:#166534}.MEDIO{background:#fef3c7;color:#92400e}.ALTO,.CRITICO{background:#fee2e2;color:#991b1b}
+.status{padding:10px 12px;border-radius:12px;background:#eef6ff;border:1px solid #c8ddff;font-size:12px;margin-bottom:14px}
+.alertcard{border-left:5px solid #d92d20;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:8px;border-top:1px solid #eee;border-right:1px solid #eee;border-bottom:1px solid #eee}
+.alertcard.medium{border-left-color:#f59e0b}.muted{font-size:12px;color:var(--muted)}
+.photo{width:84px;height:84px;object-fit:cover;border-radius:9px;border:1px solid #ddd;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal img{max-width:92%;max-height:88%;border-radius:10px}
+.login{max-width:440px;margin:50px auto}.hidden{display:none!important}
+@media(max-width:950px){.kpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}header{position:static}.toolbar{display:block}.toolbar>div{margin-bottom:8px}}
+</style>
+</head>
+<body>
+<header><h1>SAPRI · Dashboard Administrador</h1><div class="sub">Control preventivo de conducción · Fiscalización · Alertas · Evidencias</div></header>
+
+<main>
+<section id="loginBox" class="login">
+<div class="card">
+<h2 style="margin-top:0">Ingreso administradora</h2>
+<p class="muted">Esta vista está preparada para autenticación central. En modo prueba puedes entrar para revisar el diseño.</p>
+<label>Correo administrador</label><input id="adminEmail" type="email" placeholder="nombre@sapri.cl">
+<label style="margin-top:10px">Clave</label><input id="adminPass" type="password" placeholder="••••••••">
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+<button class="primary" id="btnLogin">Ingresar</button>
+<button class="secondary" id="btnDemo">Ver dashboard de prueba</button>
+</div>
+<div id="loginMsg" class="muted" style="margin-top:10px"></div>
+</div>
+</section>
+
+<section id="adminApp" class="hidden">
+<div class="status" id="connectionStatus"><b>Modo demostración.</b> Aún no conectado a la base central de trabajadores.</div>
+
+<div class="toolbar card">
+<div><label>Desde</label><input id="fDesde" type="date"></div>
+<div><label>Hasta</label><input id="fHasta" type="date"></div>
+<div><label>Trabajador</label><input id="fTrabajador" placeholder="Buscar..."></div>
+<div><label>Patente</label><input id="fPatente" placeholder="Ej. VRTT-87"></div>
+<div><label>Riesgo</label><select id="fRiesgo"><option value="">Todos</option><option>BAJO</option><option>MEDIO</option><option>ALTO</option></select></div>
+<div><button class="primary" id="btnExcel">⬇ Descargar Excel completo</button></div>
+</div>
+
+<div class="kpis" style="margin-bottom:16px">
+<div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Controles</div></div>
+<div class="kpi"><div class="n" id="kBajo">0</div><div class="l">Riesgo bajo</div></div>
+<div class="kpi"><div class="n" id="kMedio">0</div><div class="l">Riesgo medio</div></div>
+<div class="kpi"><div class="n" id="kAlto">0</div><div class="l">Riesgo alto</div></div>
+<div class="kpi"><div class="n" id="kDesv">0</div><div class="l">Desvíos abiertos</div></div>
+<div class="kpi"><div class="n" id="kAlertas">0</div><div class="l">Alertas pendientes</div></div>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-p="alertas">Alertas</button>
+<button class="tab" data-p="controles">Controles</button>
+<button class="tab" data-p="desvios">Desvíos y Fotos</button>
+<button class="tab" data-p="reaccion">Test de reacción</button>
+<button class="tab" data-p="somnolencia">Somnolencia</button>
+</div>
+
+<div id="alertas" class="panel active card">
+<h2>Alertas activas</h2>
+<div id="alertList"></div>
+</div>
+
+<div id="controles" class="panel card">
+<h2>Controles realizados</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Cargo</th><th>Patente</th><th>Marca/Tipo</th><th>Servicio/CC</th><th>Riesgo</th><th>GPS</th></tr></thead><tbody id="tbControles"></tbody></table></div>
+</div>
+
+<div id="desvios" class="panel card">
+<h2>Desvíos y evidencias</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Patente</th><th>Ítem</th><th>Descripción</th><th>Criticidad</th><th>Estado</th><th>Foto</th></tr></thead><tbody id="tbDesvios"></tbody></table></div>
+</div>
+
+<div id="reaccion" class="panel card">
+<h2>Resultados de reacción</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Serie</th><th>Aciertos</th><th>Errores</th><th>Riesgo</th><th>Bloqueo</th></tr></thead><tbody id="tbReaccion"></tbody></table></div>
+</div>
+
+<div id="somnolencia" class="panel card">
+<h2>Evaluación de somnolencia</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Puntaje</th><th>Riesgo</th><th>Horas sueño</th><th>Cansancio</th></tr></thead><tbody id="tbSomn"></tbody></table></div>
+</div>
+</section>
+</main>
+
+<div id="photoModal" class="modal"><img id="modalImg" alt="Evidencia ampliada"></div>
+
+<script>
+const DEMO={
+controles:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",trabajador:"Trabajador Demo",cargo:"Técnico",patente:"VRTT-87",vehiculo:"TOYOTA · CAMIONETA",servicio:"Servicio Demo / CC 100",riesgo:"MEDIO",gps:"-33.01,-71.55"},
+{fecha:"2026-09-01 07:45",folio:"SAPRI-CON-DEMO-002",trabajador:"Trabajador Demo 2",cargo:"Supervisor",patente:"PCJD-87",vehiculo:"FORD · FURGÓN",servicio:"Servicio Demo / CC 101",riesgo:"ALTO",gps:"-33.02,-71.54"}],
+desvios:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",patente:"VRTT-87",item:"Daños estructurales",descripcion:"Piquete en puerta delantera derecha",criticidad:"Mayor",estado:"ABIERTA",foto:""}],
+reaccion:[
+{fecha:"2026-09-01 07:45",folio:"SAPRI-CON-DEMO-002",trabajador:"Trabajador Demo 2",serie:1,aciertos:1,errores:4,riesgo:"ALTO",bloqueo:"2 minutos"}],
+somnolencia:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",trabajador:"Trabajador Demo",puntaje:5,riesgo:"MEDIO",horas:5.5,cansancio:"Leve"}],
+alertas:[
+{fecha:"2026-09-01 07:12",nivel:"MEDIO",tipo:"VEHÍCULO",folio:"SAPRI-CON-DEMO-001",mensaje:"No Conforme: piquete en puerta delantera derecha",trabajador:"Trabajador Demo",patente:"VRTT-87"},
+{fecha:"2026-09-01 07:45",nivel:"ALTO",tipo:"REACCIÓN",folio:"SAPRI-CON-DEMO-002",mensaje:"Test de reacción clasificado ALTO",trabajador:"Trabajador Demo 2",patente:"PCJD-87"}]
+};
+let DATA={controles:[],desvios:[],reaccion:[],somnolencia:[],alertas:[]};
+
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function loginDemo(){DATA=JSON.parse(JSON.stringify(DEMO));$("loginBox").classList.add("hidden");$("adminApp").classList.remove("hidden");render()}
+$("btnDemo").addEventListener("click",loginDemo);
+$("btnLogin").addEventListener("click",()=>{
+  $("loginMsg").textContent="La autenticación real se activará al conectar la base central. Para revisar ahora, usa “Ver dashboard de prueba”.";
+});
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(b.dataset.p).classList.add("active");
+}));
+function render(){
+ $("kTotal").textContent=DATA.controles.length;
+ $("kBajo").textContent=DATA.controles.filter(x=>x.riesgo==="BAJO").length;
+ $("kMedio").textContent=DATA.controles.filter(x=>x.riesgo==="MEDIO").length;
+ $("kAlto").textContent=DATA.controles.filter(x=>x.riesgo==="ALTO").length;
+ $("kDesv").textContent=DATA.desvios.filter(x=>x.estado!=="CERRADA").length;
+ $("kAlertas").textContent=DATA.alertas.length;
+ $("alertList").innerHTML=DATA.alertas.length?DATA.alertas.map(a=>`<div class="alertcard ${a.nivel==="MEDIO"?"medium":""}"><div><span class="badge ${a.nivel}">${a.nivel}</span> <b>${esc(a.tipo)}</b> · ${esc(a.fecha)}</div><div style="margin-top:6px">${esc(a.mensaje)}</div><div class="muted">${esc(a.trabajador)} · ${esc(a.patente)} · ${esc(a.folio)}</div></div>`).join(""):'<div class="muted">Sin alertas pendientes.</div>';
+ $("tbControles").innerHTML=DATA.controles.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.cargo)}</td><td>${esc(x.patente)}</td><td>${esc(x.vehiculo)}</td><td>${esc(x.servicio)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.gps)}</td></tr>`).join("");
+ $("tbDesvios").innerHTML=DATA.desvios.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.patente)}</td><td>${esc(x.item)}</td><td>${esc(x.descripcion)}</td><td>${esc(x.criticidad)}</td><td>${esc(x.estado)}</td><td>${x.foto?`<img class="photo" src="${x.foto}" alt="Evidencia">`:"—"}</td></tr>`).join("");
+ $("tbReaccion").innerHTML=DATA.reaccion.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.serie)}</td><td>${esc(x.aciertos)}</td><td>${esc(x.errores)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.bloqueo)}</td></tr>`).join("");
+ $("tbSomn").innerHTML=DATA.somnolencia.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.puntaje)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.horas)}</td><td>${esc(x.cansancio)}</td></tr>`).join("");
+ document.querySelectorAll(".photo").forEach(im=>im.addEventListener("click",()=>{$("modalImg").src=im.src;$("photoModal").classList.add("open")}));
+}
+$("photoModal").addEventListener("click",()=>$("photoModal").classList.remove("open"));
+
+$("btnExcel").addEventListener("click",async()=>{
+  try{
+    const XLSX=await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+    const wb=XLSX.utils.book_new();
+    const sheets=[
+      ["Controles",DATA.controles],
+      ["Desvios",DATA.desvios],
+      ["Reacciones",DATA.reaccion],
+      ["Somnolencia",DATA.somnolencia],
+      ["Alertas",DATA.alertas]
+    ];
+    sheets.forEach(([name,rows])=>{
+      const ws=XLSX.utils.json_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb,ws,name);
+    });
+    XLSX.writeFile(wb,"SAPRI_Control_Conduccion_Completo.xlsx");
+  }catch(e){
+    alert("No se pudo generar Excel. Verifica conexión a internet.");
+  }
+});
+</script>
+</body></html>
