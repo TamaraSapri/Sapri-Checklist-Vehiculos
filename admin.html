@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAPRI · Dashboard Administrador</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--ink:#17202a;--muted:#667085;--line:#d8dee6;--nav:#111827;--blue:#174ea6;--green:#17803d;--yellow:#b7791f;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--nav);color:#fff;padding:18px 22px;position:sticky;top:0;z-index:5}
+header h1{font-size:21px;margin:0}.sub{opacity:.76;font-size:12px;margin-top:4px}
+main{max-width:1280px;margin:20px auto;padding:0 14px 42px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.toolbar>div{min-width:170px;flex:1}
+label{display:block;font-size:12px;font-weight:800;margin-bottom:5px}input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#e8edf3;color:#18212b}.danger{background:var(--red);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}.kpi{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}.kpi .n{font-size:27px;font-weight:900}.kpi .l{font-size:11px;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{background:#e9edf2}.tab.active{background:var(--nav);color:#fff}
+.panel{display:none}.panel.active{display:block}
+.tablewrap{overflow:auto;border:1px solid #e5e7eb;border-radius:12px;max-height:520px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:9px 10px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}th{position:sticky;top:0;background:#f8fafc;z-index:1}
+.badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.BAJO{background:#dcfce7;color:#166534}.MEDIO{background:#fef3c7;color:#92400e}.ALTO,.CRITICO{background:#fee2e2;color:#991b1b}
+.status{padding:10px 12px;border-radius:12px;background:#eef6ff;border:1px solid #c8ddff;font-size:12px;margin-bottom:14px}
+.alertcard{border-left:5px solid #d92d20;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:8px;border-top:1px solid #eee;border-right:1px solid #eee;border-bottom:1px solid #eee}
+.alertcard.medium{border-left-color:#f59e0b}.muted{font-size:12px;color:var(--muted)}
+.photo{width:84px;height:84px;object-fit:cover;border-radius:9px;border:1px solid #ddd;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:20;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal img{max-width:92%;max-height:88%;border-radius:10px}
+.login{max-width:440px;margin:50px auto}.hidden{display:none!important}
+@media(max-width:950px){.kpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}header{position:static}.toolbar{display:block}.toolbar>div{margin-bottom:8px}}
+.photo-gallery{display:flex;gap:6px;flex-wrap:wrap}.photo-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}.photo-count{font-size:11px;color:#64748b}
+.movement-folder{border:1px solid #dbe3ec;border-radius:12px;background:#f8fafc;padding:10px;min-width:260px}
+.folder-btn{background:#e8edf3;color:#18212b;padding:8px 10px;border-radius:9px;font-size:12px}
+.folder-btn.open{background:#174ea6;color:#fff}
+.movement-gallery{display:none;margin-top:10px;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}
+.movement-gallery.open{display:grid}
+.movement-photo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.movement-photo img{width:100%;height:92px;object-fit:cover;border-radius:9px;border:1px solid #d8dee6;cursor:pointer;background:#fff}
+.movement-photo span{font-size:10px;color:#667085;white-space:normal;line-height:1.2}
+.mov-badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900;background:#eef2ff;color:#3730a3}
+.mov-badge.ENTREGO{background:#fff7ed;color:#9a3412}
+.mov-badge.RECIBO{background:#ecfdf3;color:#166534}
+.damage-yes{font-weight:900;color:#b42318}.damage-no{color:#17803d;font-weight:800}
+@media(max-width:600px){.movement-gallery{grid-template-columns:repeat(2,minmax(90px,1fr))}.movement-folder{min-width:220px}}
+
+.manage-actions{display:flex;gap:6px;flex-wrap:wrap;min-width:185px}.manage-btn{border:0;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:800;cursor:pointer}.manage-btn.attend{background:#fff3cd;color:#7a5200}.manage-btn.close{background:#dcfce7;color:#166534}.manage-btn.reopen{background:#e8edf3;color:#18212b}.state-chip{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:900}.state-PENDIENTE,.state-ABIERTA{background:#fee2e2;color:#991b1b}.state-ATENDIDA,.state-EN-GESTION{background:#fef3c7;color:#92400e}.state-CERRADA{background:#dcfce7;color:#166534}.closure-note{font-size:11px;color:#667085;margin-top:4px;max-width:240px;white-space:normal}
+</style>
+</head>
+<body>
+<header><h1>SAPRI · Dashboard Administrador</h1><div class="sub">Control preventivo de conducción · Filtros por patente, falla y riesgo · Evidencias · Excel · WhatsApp</div></header>
+
+<main>
+<section id="loginBox" class="login">
+<div class="card">
+<h2 style="margin-top:0">Ingreso administradora</h2>
+<p class="muted">Ingresa con la cuenta administradora creada en Supabase Auth.</p>
+<label>Correo administrador</label><input id="adminEmail" type="email" placeholder="nombre@sapri.cl">
+<label style="margin-top:10px">Clave</label><input id="adminPass" type="password" placeholder="••••••••">
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+<button class="primary" id="btnLogin">Ingresar</button>
+<button class="secondary" id="btnDemo">Ver dashboard de prueba</button>
+</div>
+<div id="loginMsg" class="muted" style="margin-top:10px"></div>
+</div>
+</section>
+
+<section id="adminApp" class="hidden">
+<div class="status" id="connectionStatus"><b>Conexión central.</b> Inicia sesión para cargar datos reales.</div>
+
+<div class="toolbar card">
+<div><label>Desde</label><input id="fDesde" type="date"></div>
+<div><label>Hasta</label><input id="fHasta" type="date"></div>
+<div><label>Trabajador</label><input id="fTrabajador" placeholder="Buscar..."></div>
+<div><label>Patente</label><input id="fPatente" placeholder="Ej. VRTT-87"></div>
+<div><label>Falla / ítem</label><input id="fFalla" placeholder="Ej. neumático, luz, piquete..."></div>
+<div><label>Riesgo / criticidad</label><select id="fRiesgo"><option value="">Todos</option><option>BAJO</option><option>MEDIO</option><option>ALTO</option></select></div>
+<div style="display:flex;gap:8px;align-items:end"><button class="secondary" id="btnLimpiar">Limpiar filtros</button><button class="primary" id="btnExcel">⬇ Descargar Excel completo</button></div>
+</div>
+<div id="filterInfo" class="muted" style="margin:-6px 0 14px 4px">Mostrando todos los registros.</div>
+
+<div class="kpis" style="margin-bottom:16px">
+<div class="kpi"><div class="n" id="kTotal">0</div><div class="l">Controles</div></div>
+<div class="kpi"><div class="n" id="kBajo">0</div><div class="l">Riesgo bajo</div></div>
+<div class="kpi"><div class="n" id="kMedio">0</div><div class="l">Riesgo medio</div></div>
+<div class="kpi"><div class="n" id="kAlto">0</div><div class="l">Riesgo alto</div></div>
+<div class="kpi"><div class="n" id="kDesv">0</div><div class="l">Desvíos abiertos</div></div>
+<div class="kpi"><div class="n" id="kAlertas">0</div><div class="l">Alertas pendientes</div></div>
+</div>
+
+
+<div class="card" id="filtrosAdmin" style="margin-bottom:16px">
+  <h3 style="margin-top:0">Filtros de búsqueda</h3>
+  <div class="toolbar" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    <div>
+      <label>Patente</label>
+      <input id="fPatente" placeholder="Ej. ABCD12">
+    </div>
+    <div>
+      <label>Trabajador</label>
+      <input id="fTrabajador" placeholder="Nombre o apellido">
+    </div>
+    <div>
+      <label>Riesgo</label>
+      <select id="fRiesgo">
+        <option value="">Todos</option>
+        <option value="BAJO">BAJO</option>
+        <option value="MEDIO">MEDIO</option>
+        <option value="ALTO">ALTO</option>
+      </select>
+    </div>
+    <div>
+      <label>Fecha desde</label>
+      <input id="fDesde" type="date">
+    </div>
+    <div>
+      <label>Fecha hasta</label>
+      <input id="fHasta" type="date">
+    </div>
+    <div>
+      <label>Falla / ítem / descripción</label>
+      <input id="fFalla" placeholder="Ej. neumático, freno, puerta">
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+    <button class="primary" id="btnAplicarFiltros">Aplicar filtros</button>
+    <button class="secondary" id="btnLimpiarFiltros">Limpiar filtros</button>
+  </div>
+  <div id="filtroResumen" class="muted" style="margin-top:8px"></div>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-p="alertas">Alertas</button>
+<button class="tab" data-p="controles">Controles</button>
+<button class="tab" data-p="desvios">Desvíos y Fotos</button>
+<button class="tab" data-p="movimientos">Entrega / Recepción</button>
+<button class="tab" data-p="reaccion">Test de reacción</button>
+<button class="tab" data-p="somnolencia">Somnolencia</button>
+<button class="tab" data-p="configuracion">Configuración de alertas</button>
+</div>
+
+<div id="alertas" class="panel active card">
+<h2>Alertas activas</h2>
+<div id="alertList"></div>
+</div>
+
+<div id="controles" class="panel card">
+<h2>Controles realizados</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Cargo</th><th>Patente</th><th>Marca/Tipo</th><th>Servicio/CC</th><th>Riesgo</th><th>GPS</th></tr></thead><tbody id="tbControles"></tbody></table></div>
+</div>
+
+<div id="desvios" class="panel card">
+<h2>Desvíos y evidencias</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Patente</th><th>Ítem</th><th>Descripción</th><th>Criticidad</th><th>Estado</th><th>Foto</th><th>Gestión</th></tr></thead><tbody id="tbDesvios"></tbody></table></div>
+</div>
+
+<div id="movimientos" class="panel card">
+  <h2>🚙 Entrega / Recepción de Vehículos</h2>
+  <p class="muted">Trazabilidad fotográfica de cómo se recibe o entrega cada vehículo. Las fotografías se mantienen separadas de las evidencias de desvíos.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha / hora Chile</th>
+          <th>Movimiento</th>
+          <th>Patente</th>
+          <th>Trabajador</th>
+          <th>Origen / destino</th>
+          <th>Compañero / detalle</th>
+          <th>Km</th>
+          <th>Daños</th>
+          <th>Confirmación</th>
+          <th>📁 Registro fotográfico</th>
+        </tr>
+      </thead>
+      <tbody id="tbMovimientos"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="reaccion" class="panel card">
+<h2>Resultados de reacción</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Serie</th><th>Aciertos</th><th>Errores</th><th>Riesgo</th><th>Bloqueo</th></tr></thead><tbody id="tbReaccion"></tbody></table></div>
+</div>
+
+<div id="somnolencia" class="panel card">
+<h2>Evaluación de somnolencia</h2>
+<div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Folio</th><th>Trabajador</th><th>Puntaje</th><th>Riesgo</th><th>Horas sueño</th><th>Cansancio</th></tr></thead><tbody id="tbSomn"></tbody></table></div>
+</div>
+
+<div id="configuracion" class="panel card">
+  <h2>Configuración de alertas</h2>
+  <p class="muted">Define a qué número se enviarán las alertas y qué situaciones deben generar aviso.</p>
+
+  <div class="toolbar">
+    <div>
+      <label>Número WhatsApp administrador</label>
+      <input id="cfgWhatsApp" placeholder="Ej. 56912345678">
+      <div class="muted">Formato recomendado: código país + número, sin + ni espacios.</div>
+    </div>
+    <div>
+      <label>Nombre destinatario</label>
+      <input id="cfgNombre" placeholder="Ej. Tamara Palma">
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;background:#f8fafc">
+    <h3 style="margin-top:0">Eventos que deben generar alerta</h3>
+    <label style="display:flex;gap:9px;align-items:center;margin:10px 0">
+      <input id="cfgVehiculo" type="checkbox" style="width:auto" checked>
+      Cualquier No Conforme del vehículo
+    </label>
+    <label style="display:flex;gap:9px;align-items:center;margin:10px 0">
+      <input id="cfgSomnolencia" type="checkbox" style="width:auto" checked>
+      Somnolencia MEDIO o ALTO
+    </label>
+    <label style="display:flex;gap:9px;align-items:center;margin:10px 0">
+      <input id="cfgReaccion" type="checkbox" style="width:auto" checked>
+      Test de reacción MEDIO o ALTO
+    </label>
+    <label style="display:flex;gap:9px;align-items:center;margin:10px 0">
+      <input id="cfgGeneral" type="checkbox" style="width:auto" checked>
+      Riesgo general ALTO
+    </label>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+    <button class="primary" id="btnGuardarConfig">Guardar configuración</button>
+    <button class="secondary" id="btnProbarWhatsApp">Probar número en WhatsApp</button>
+  </div>
+
+  <div id="cfgMsg" class="muted" style="margin-top:10px"></div>
+
+  <div class="status" style="margin-top:16px">
+    <b>Importante:</b> esta configuración deja listo el destinatario y las reglas.
+    El envío automático se activará en el siguiente paso mediante una función segura del backend.
+    No se guardarán claves privadas de WhatsApp dentro de GitHub.
+  </div>
+</div>
+
+</section>
+</main>
+
+<div id="photoModal" class="modal"><img id="modalImg" alt="Evidencia ampliada"></div>
+
+<script>
+
+const SUPABASE_URL="https://ocntfnyfyjannjcumtss.supabase.co";
+const SUPABASE_KEY="sb_publishable_D2sxm9FhVMRO45webSfu3g_4kilTCkA";
+let accessToken=null;
+
+async function api(path, options={}){
+  const headers=Object.assign({
+    "apikey":SUPABASE_KEY,
+    "Authorization":"Bearer "+(accessToken||SUPABASE_KEY),
+    "Content-Type":"application/json"
+  },options.headers||{});
+  const res=await fetch(SUPABASE_URL+path,Object.assign({},options,{headers}));
+  const txt=await res.text();
+  if(!res.ok) throw new Error(txt||("HTTP "+res.status));
+  return txt?JSON.parse(txt):null;
+}
+
+async function adminLogin(email,password){
+  const res=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{
+    method:"POST",
+    headers:{"apikey":SUPABASE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify({email,password})
+  });
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.msg||data.error_description||"No se pudo iniciar sesión");
+  accessToken=data.access_token;
+  sessionStorage.setItem("sapriAdminToken",accessToken);
+  sessionStorage.setItem("sapriAdminEmail",email);
+  return data;
+}
+
+async function signedEvidenceUrl(path){
+  const res=await fetch(SUPABASE_URL+"/storage/v1/object/sign/evidencias/"+encodeURIComponent(path).replace(/%2F/g,"/"),{
+    method:"POST",
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+accessToken,"Content-Type":"application/json"},
+    body:JSON.stringify({expiresIn:3600})
+  });
+  const d=await res.json();
+  if(!res.ok)return "";
+  return d.signedURL ? SUPABASE_URL+"/storage/v1"+d.signedURL : "";
+}
+
+
+function norm(v){return String(v??"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();}
+function dateOnly(v){
+  if(!v) return "";
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime())) return String(v).slice(0,10);
+  return d.toISOString().slice(0,10);
+}
+function currentFilters(){
+  return {
+    patente:norm($("fPatente")?.value),
+    trabajador:norm($("fTrabajador")?.value),
+    riesgo:String($("fRiesgo")?.value||"").toUpperCase(),
+    desde:$("fDesde")?.value||"",
+    hasta:$("fHasta")?.value||"",
+    falla:norm($("fFalla")?.value)
+  };
+}
+function inDateRange(fecha,f){
+  const d=dateOnly(fecha);
+  if(f.desde && d && d<f.desde) return false;
+  if(f.hasta && d && d>f.hasta) return false;
+  return true;
+}
+function textHas(value,needle){return !needle || norm(value).includes(needle);}
+function riskMatch(value,risk){return !risk || String(value||"").toUpperCase()===risk;}
+
+function filteredData(){
+  const f=currentFilters();
+  const controles=DATA.controles.filter(x =>
+    textHas(x.patente,f.patente) &&
+    textHas(x.trabajador,f.trabajador) &&
+    riskMatch(x.riesgo,f.riesgo) &&
+    inDateRange(x.fecha,f) &&
+    (!f.falla || norm([x.vehiculo,x.servicio,x.folio].join(" ")).includes(f.falla))
+  );
+
+  const desvios=DATA.desvios.filter(x => {
+    const c=(RAW.controles||[]).find(c=>c.folio===x.folio)||{};
+    const riesgoDesvio=String(x.criticidad||"").toUpperCase();
+    return textHas(x.patente,f.patente) &&
+      textHas(c.trabajador,f.trabajador) &&
+      riskMatch(riesgoDesvio,f.riesgo) &&
+      inDateRange(x.fecha,f) &&
+      (!f.falla || norm([x.item,x.item_codigo,x.descripcion,x.criticidad].join(" ")).includes(f.falla));
+  });
+
+  const reaccion=DATA.reaccion.filter(x => {
+    const c=(RAW.controles||[]).find(c=>c.folio===x.folio)||{};
+    return textHas(c.patente,f.patente) &&
+      textHas(x.trabajador,f.trabajador) &&
+      riskMatch(x.riesgo,f.riesgo) &&
+      inDateRange(x.fecha,f) &&
+      (!f.falla || norm([x.folio,x.serie].join(" ")).includes(f.falla));
+  });
+
+  const somnolencia=DATA.somnolencia.filter(x => {
+    const c=(RAW.controles||[]).find(c=>c.folio===x.folio)||{};
+    return textHas(c.patente,f.patente) &&
+      textHas(x.trabajador,f.trabajador) &&
+      riskMatch(x.riesgo,f.riesgo) &&
+      inDateRange(x.fecha,f) &&
+      (!f.falla || norm([x.cansancio,x.folio].join(" ")).includes(f.falla));
+  });
+
+  const alertas=DATA.alertas.filter(x =>
+    textHas(x.patente,f.patente) &&
+    textHas(x.trabajador,f.trabajador) &&
+    riskMatch(x.nivel,f.riesgo) &&
+    inDateRange(x.fecha,f) &&
+    (!f.falla || norm([x.tipo,x.mensaje,x.folio].join(" ")).includes(f.falla))
+  );
+
+  return {controles,desvios,reaccion,somnolencia,alertas};
+}
+
+function renderFiltered(){
+  const F=filteredData();
+
+  if($("tbControles")) $("tbControles").innerHTML=F.controles.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.cargo)}</td><td>${esc(x.patente)}</td><td>${esc(x.vehiculo)}</td><td>${esc(x.servicio)}</td><td>${badge(x.riesgo)}</td><td>${esc(x.gps)}</td></tr>`).join("");
+
+  if($("tbDesvios")) $("tbDesvios").innerHTML=F.desvios.map(x=>{
+    const gal=(x.fotos&&x.fotos.length)
+      ? `<div class="photo-gallery">${x.fotos.map((f,i)=>`<div class="photo-wrap"><img class="photo" src="${f.url}" alt="${esc(f.nombre)}" title="${esc(f.nombre)}"><span class="photo-count">${i+1}/${x.fotos.length}</span></div>`).join("")}</div>`
+      : "—";
+    const est=String(x.estado||"ABIERTA").toUpperCase();
+    const actions=est==="CERRADA"?`<button class="manage-btn reopen" onclick="gestionarDesvio('${x.id}','REABRIR')">↺ Reabrir</button>`:`${est==="ABIERTA"?`<button class="manage-btn attend" onclick="gestionarDesvio('${x.id}','GESTION')">En gestión</button>`:""}<button class="manage-btn close" onclick="gestionarDesvio('${x.id}','CERRAR')">✓ Cerrar</button>`;
+    const cierre=x.observaciones_cierre?`<div class="closure-note"><b>Cierre:</b> ${esc(x.observaciones_cierre)}${x.cerrada_por?" · "+esc(x.cerrada_por):""}</div>`:"";
+    return `<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.patente)}</td><td>${esc(x.item)}</td><td>${esc(x.descripcion)}</td><td>${badge(x.criticidad)}</td><td><span class="state-chip ${stateClass(est)}">${esc(est)}</span>${cierre}</td><td>${gal}</td><td><div class="manage-actions">${actions}</div></td></tr>`;
+  }).join("");
+
+  if($("tbReaccion")) $("tbReaccion").innerHTML=F.reaccion.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.serie)}</td><td>${esc(x.aciertos)}</td><td>${esc(x.errores)}</td><td>${badge(x.riesgo)}</td><td>${esc(x.bloqueo||"")}</td></tr>`).join("");
+
+  if($("tbSomnolencia")) $("tbSomnolencia").innerHTML=F.somnolencia.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.puntaje)}</td><td>${badge(x.riesgo)}</td><td>${esc(x.horas)}</td><td>${esc(x.cansancio)}</td></tr>`).join("");
+
+  if($("tbAlertas")) $("tbAlertas").innerHTML=F.alertas.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${badge(x.nivel)}</td><td>${esc(x.tipo)}</td><td>${esc(x.folio)}</td><td>${esc(x.mensaje)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.patente)}</td></tr>`).join("");
+
+  const total=F.controles.length;
+  if($("kTotal")) $("kTotal").textContent=total;
+  if($("kBajo")) $("kBajo").textContent=F.controles.filter(x=>String(x.riesgo).toUpperCase()==="BAJO").length;
+  if($("kMedio")) $("kMedio").textContent=F.controles.filter(x=>String(x.riesgo).toUpperCase()==="MEDIO").length;
+  if($("kAlto")) $("kAlto").textContent=F.controles.filter(x=>String(x.riesgo).toUpperCase()==="ALTO").length;
+
+  if($("filtroResumen")){
+    const f=currentFilters();
+    const activos=[
+      f.patente&&`patente "${$("fPatente").value}"`,
+      f.trabajador&&`trabajador "${$("fTrabajador").value}"`,
+      f.riesgo&&`riesgo ${f.riesgo}`,
+      f.desde&&`desde ${f.desde}`,
+      f.hasta&&`hasta ${f.hasta}`,
+      f.falla&&`falla "${$("fFalla").value}"`
+    ].filter(Boolean);
+    $("filtroResumen").textContent=activos.length
+      ? `Filtros activos: ${activos.join(" · ")}`
+      : "Sin filtros activos.";
+  }
+}
+
+function bindAdminFilters(){
+  const ids=["fPatente","fTrabajador","fRiesgo","fDesde","fHasta","fFalla"];
+  ids.forEach(id=>{
+    const el=$(id);
+    if(!el) return;
+    el.addEventListener("input",renderFiltered);
+    el.addEventListener("change",renderFiltered);
+  });
+  $("btnAplicarFiltros")?.addEventListener("click",renderFiltered);
+  $("btnLimpiarFiltros")?.addEventListener("click",()=>{
+    ids.forEach(id=>{const el=$(id); if(el) el.value="";});
+    renderFiltered();
+  });
+}
+
+
+function adminActor(){
+  return sessionStorage.getItem("sapriAdminEmail")||"Administrador";
+}
+function stateClass(v){return "state-"+String(v||"").toUpperCase().replace(/\s+/g,"-");}
+async function patchRow(table,id,payload){
+  if(id===undefined||id===null||id==="") throw new Error("Registro sin ID");
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,{
+    method:"PATCH",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":"Bearer "+(accessToken||SUPABASE_KEY),
+      "Content-Type":"application/json",
+      "Prefer":"return=representation"
+    },
+    body:JSON.stringify(payload)
+  });
+  const txt=await res.text();
+  if(!res.ok) throw new Error(txt||("HTTP "+res.status));
+  return txt?JSON.parse(txt):null;
+}
+async function gestionarDesvio(id,accion){
+  try{
+    if(accion==="GESTION"){
+      if(!confirm("¿Marcar este desvío como EN GESTIÓN?")) return;
+      await patchRow("desviaciones",id,{estado:"EN GESTIÓN",fecha_atencion:new Date().toISOString(),atendida_por:adminActor()});
+    }else if(accion==="CERRAR"){
+      const obs=prompt("Acción realizada / comentario de cierre:");
+      if(obs===null) return;
+      if(!obs.trim()){alert("Debes indicar cómo se cerró la falla.");return;}
+      await patchRow("desviaciones",id,{estado:"CERRADA",fecha_cierre:new Date().toISOString(),cerrada_por:adminActor(),observaciones_cierre:obs.trim()});
+    }else if(accion==="REABRIR"){
+      if(!confirm("¿Reabrir este desvío?")) return;
+      await patchRow("desviaciones",id,{estado:"ABIERTA",fecha_cierre:null,cerrada_por:null,observaciones_cierre:null});
+    }
+    await loadRealData();
+  }catch(e){console.error(e);alert("No se pudo actualizar el desvío: "+e.message);}
+}
+async function gestionarAlerta(id,accion){
+  try{
+    if(accion==="ATENDER"){
+      if(!confirm("¿Marcar esta alerta como ATENDIDA?")) return;
+      await patchRow("alertas",id,{estado:"ATENDIDA",fecha_atencion:new Date().toISOString(),atendida_por:adminActor()});
+    }else if(accion==="CERRAR"){
+      const obs=prompt("Acción tomada / comentario de cierre de la alerta:");
+      if(obs===null) return;
+      if(!obs.trim()){alert("Debes indicar la acción tomada antes de cerrar.");return;}
+      await patchRow("alertas",id,{estado:"CERRADA",fecha_cierre:new Date().toISOString(),cerrada_por:adminActor(),observaciones_cierre:obs.trim()});
+    }
+    await loadRealData();
+  }catch(e){console.error(e);alert("No se pudo actualizar la alerta: "+e.message);}
+}
+async function gestionarAlertaCritica(id,accion){
+  try{
+    if(accion==="ATENDER"){
+      await patchRow("alertas_criticas",id,{estado:"ATENDIDA",fecha_atencion:new Date().toISOString(),atendida_por:adminActor()});
+    }else if(accion==="CERRAR"){
+      const obs=prompt("Acción tomada / comentario de cierre:");
+      if(obs===null) return;
+      if(!obs.trim()){alert("Debes indicar la acción tomada.");return;}
+      await patchRow("alertas_criticas",id,{estado:"CERRADA",fecha_cierre:new Date().toISOString(),cerrada_por:adminActor(),observaciones_cierre:obs.trim()});
+    }
+    await cargarAlertasCriticas();
+  }catch(e){console.error(e);alert("No se pudo actualizar la alerta crítica: "+e.message);}
+}
+
+async function loadRealData(){
+  const [controles,respuestas,desvios,reacciones,somnolencia,alertas,evidencias,configuracion,movimientos]=await Promise.all([
+    api("/rest/v1/controles?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/respuestas_checklist?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/desviaciones?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/reacciones?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/somnolencia?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/alertas?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/evidencias?select=*&order=fecha_hora.desc"),
+    api("/rest/v1/configuracion_alertas?select=*"),
+    api("/rest/v1/movimientos_vehiculo?select=*&order=fecha_hora.desc")
+  ]);
+
+  RAW={
+    controles:controles||[],
+    respuestas:respuestas||[],
+    desvios:desvios||[],
+    evidencias:evidencias||[],
+    reacciones:reacciones||[],
+    somnolencia:somnolencia||[],
+    alertas:alertas||[],
+    configuracion:configuracion||[],
+    movimientos:movimientos||[]
+  };
+
+  DATA.controles=(controles||[]).map(x=>({
+    fecha:x.fecha_hora,folio:x.folio,trabajador:x.trabajador,cargo:x.cargo,patente:x.patente,
+    vehiculo:[x.marca,x.tipo_vehiculo].filter(Boolean).join(" · "),
+    servicio:[x.servicio,x.centro_costo?("CC "+x.centro_costo):""].filter(Boolean).join(" / "),
+    riesgo:x.riesgo_general,gps:(x.latitud!=null?`${x.latitud},${x.longitud}`:"—")
+  }));
+
+  const evMap={};
+  for(const e of (evidencias||[])){
+    const ek=e.folio+"|"+(e.item_codigo||"");
+    if(!evMap[ek])evMap[ek]=[];
+    evMap[ek].push(e);
+  }
+
+  DATA.desvios=[];
+  for(const x of (desvios||[])){
+    const evids=evMap[x.folio+"|"+(x.item_codigo||"")]||[];
+    const fotos=[];
+    for(const ev of evids){
+      if(ev&&ev.storage_path){
+        const url=await signedEvidenceUrl(ev.storage_path);
+        if(url) fotos.push({url,nombre:ev.nombre_archivo||"Evidencia",storage_path:ev.storage_path});
+      }
+    }
+    DATA.desvios.push({
+      id:x.id,fecha:x.fecha_hora,folio:x.folio,patente:x.patente,item:x.item,item_codigo:x.item_codigo,
+      descripcion:x.descripcion,criticidad:x.criticidad,estado:x.estado,fotos,
+      fecha_atencion:x.fecha_atencion,atendida_por:x.atendida_por,fecha_cierre:x.fecha_cierre,cerrada_por:x.cerrada_por,observaciones_cierre:x.observaciones_cierre
+    });
+  }
+
+  const grouped={};
+  for(const r of (reacciones||[])){
+    const k=r.folio+"|"+r.serie;
+    if(!grouped[k])grouped[k]={fecha:r.fecha_hora,folio:r.folio,trabajador:"",serie:r.serie,aciertos:0,errores:0,riesgo:r.riesgo_serie,bloqueo:r.bloqueado_hasta||""};
+    if(r.acierto)grouped[k].aciertos++; else grouped[k].errores++;
+  }
+  const cMap=Object.fromEntries((controles||[]).map(c=>[c.folio,c]));
+  DATA.reaccion=Object.values(grouped).map(g=>Object.assign(g,{
+    trabajador:(cMap[g.folio]||{}).trabajador||"",
+    patente:(cMap[g.folio]||{}).patente||""
+  }));
+
+  DATA.somnolencia=(somnolencia||[]).map(x=>({
+    fecha:x.fecha_hora,folio:x.folio,trabajador:(cMap[x.folio]||{}).trabajador||"",
+    patente:(cMap[x.folio]||{}).patente||"",
+    puntaje:x.puntaje,riesgo:x.riesgo,horas:x.horas_sueno,cansancio:x.cansancio
+  }));
+
+  DATA.alertas=(alertas||[]).map(x=>({
+    id:x.id,fecha:x.fecha_hora,nivel:x.nivel,tipo:x.tipo,folio:x.folio,mensaje:x.mensaje,
+    trabajador:x.trabajador,patente:x.patente,estado:x.estado||"PENDIENTE",
+    fecha_atencion:x.fecha_atencion,atendida_por:x.atendida_por,fecha_cierre:x.fecha_cierre,cerrada_por:x.cerrada_por,observaciones_cierre:x.observaciones_cierre
+  }));
+
+  DATA.movimientos=[];
+  for(const x of (movimientos||[])){
+    const fotos=[];
+    const obj=(x && x.fotos && typeof x.fotos==="object") ? x.fotos : {};
+    for(const [codigo,path] of Object.entries(obj)){
+      if(path){
+        const url=await signedEvidenceUrl(path);
+        if(url) fotos.push({codigo,url,path});
+      }
+    }
+    DATA.movimientos.push({
+      id:x.id||x.folio,
+      fecha:x.fecha_hora,
+      folio:x.folio,
+      trabajador:x.trabajador,
+      patente:x.patente,
+      kilometraje:x.kilometraje,
+      tipo_movimiento:x.tipo_movimiento,
+      origen_destino:x.origen_destino,
+      companero:x.companero,
+      detalle:x.detalle,
+      presenta_danios:x.presenta_danios,
+      descripcion_danios:x.descripcion_danios,
+      confirmado:!!x.confirmado,
+      confirmado_en:x.confirmado_en,
+      latitud:x.latitud,
+      longitud:x.longitud,
+      fotos
+    });
+  }
+
+  render();
+  renderFiltered();
+  document.getElementById("connectionStatus").innerHTML="<b>Conectado a Supabase.</b> Datos reales actualizados.";
+}
+const DEMO={
+controles:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",trabajador:"Trabajador Demo",cargo:"Técnico",patente:"VRTT-87",vehiculo:"TOYOTA · CAMIONETA",servicio:"Servicio Demo / CC 100",riesgo:"MEDIO",gps:"-33.01,-71.55"},
+{fecha:"2026-09-01 07:45",folio:"SAPRI-CON-DEMO-002",trabajador:"Trabajador Demo 2",cargo:"Supervisor",patente:"PCJD-87",vehiculo:"FORD · FURGÓN",servicio:"Servicio Demo / CC 101",riesgo:"ALTO",gps:"-33.02,-71.54"}],
+desvios:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",patente:"VRTT-87",item:"Daños estructurales",descripcion:"Piquete en puerta delantera derecha",criticidad:"Mayor",estado:"ABIERTA",foto:""}],
+reaccion:[
+{fecha:"2026-09-01 07:45",folio:"SAPRI-CON-DEMO-002",trabajador:"Trabajador Demo 2",serie:1,aciertos:1,errores:4,riesgo:"ALTO",bloqueo:"2 minutos"}],
+somnolencia:[
+{fecha:"2026-09-01 07:12",folio:"SAPRI-CON-DEMO-001",trabajador:"Trabajador Demo",puntaje:5,riesgo:"MEDIO",horas:5.5,cansancio:"Leve"}],
+alertas:[
+{fecha:"2026-09-01 07:12",nivel:"MEDIO",tipo:"VEHÍCULO",folio:"SAPRI-CON-DEMO-001",mensaje:"No Conforme: piquete en puerta delantera derecha",trabajador:"Trabajador Demo",patente:"VRTT-87"},
+{fecha:"2026-09-01 07:45",nivel:"ALTO",tipo:"REACCIÓN",folio:"SAPRI-CON-DEMO-002",mensaje:"Test de reacción clasificado ALTO",trabajador:"Trabajador Demo 2",patente:"PCJD-87"}]
+};
+const MASTER_VEHICLES = [{"patente": "PCJD-87", "marca": "FORD", "tipo": "FURGÓN"}, {"patente": "PKDX-51", "marca": "BOBCAT", "tipo": "MAQ. INDUSTRIAL"}, {"patente": "PTTY-50", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "PXHH-33", "marca": "GOREN", "tipo": "SEMI REMOLQUE"}, {"patente": "RVLW-55", "marca": "FORD", "tipo": "FURGÓN"}, {"patente": "SDLV-22", "marca": "FORD", "tipo": "BUS"}, {"patente": "SKRW-27", "marca": "LAND ROVER", "tipo": "STATION WAGON"}, {"patente": "SKRX-12", "marca": "MITSUBISHI", "tipo": "CAMIONETA"}, {"patente": "SKRY-28", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "SLBZ-80", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "SLBZ-84", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "SRDX-99", "marca": "MERCEDES BENZ", "tipo": "CAMIÓN PLUMA"}, {"patente": "SVRH-22", "marca": "IVECO", "tipo": "CAMIÓN"}, {"patente": "SXYK-86", "marca": "PEUGEOT", "tipo": "FURGÓN"}, {"patente": "SZDP-83", "marca": "RAM", "tipo": "CAMIONETA"}, {"patente": "SZFD-14", "marca": "MERCEDES BENZ", "tipo": "CAMIÓN"}, {"patente": "SZFD-27", "marca": "MERCEDES BENZ", "tipo": "CAMIÓN"}, {"patente": "TBZY-58", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "TBZY-59", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "TCLK-13", "marca": "FORD", "tipo": "CAMIONETA"}, {"patente": "THGZ-14", "marca": "PEUGEOT", "tipo": "FURGÓN"}, {"patente": "TJLZ-15", "marca": "CHEVROLET", "tipo": "STATION WAGON"}, {"patente": "TPHV-13", "marca": "MAN", "tipo": "CAMIÓN PLUMA"}, {"patente": "TSKG-39", "marca": "LAND ROVER", "tipo": "STATION WAGON"}, {"patente": "ULC-359", "marca": "WEWFE", "tipo": "CARRO DE ARRASTRE"}, {"patente": "ULC-988", "marca": "AEROVAN", "tipo": "CARRO DE ARRASTRE"}, {"patente": "ULD-270", "marca": "AEROVAN", "tipo": "CARRO DE ARRASTRE"}, {"patente": "VBSH-44", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VBSR-35", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VCLK-11", "marca": "FREIGHTLINER", "tipo": "CAMIÓN"}, {"patente": "VDKF-67", "marca": "CATERPILLAR", "tipo": "RETROEXCAVADORA"}, {"patente": "VFCF-44", "marca": "FORD", "tipo": "FURGÓN"}, {"patente": "VJVR-87", "marca": "MAN", "tipo": "CAMIÓN PLUMA"}, {"patente": "VKFS-94", "marca": "MAN", "tipo": "CAMIÓN"}, {"patente": "VKWY-88", "marca": "MAN", "tipo": "CAMIÓN PLUMA"}, {"patente": "VPCY-96", "marca": "PEUGEOT", "tipo": "FURGÓN"}, {"patente": "VPDF-32", "marca": "FORD", "tipo": "FURGÓN"}, {"patente": "VRKT-30", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VRTP-89", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VRTT-86", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VRTT-87", "marca": "TOYOTA", "tipo": "CAMIONETA"}, {"patente": "VVWZ-82", "marca": "MERCEDES BENZ", "tipo": "MINIBUS"}];
+const MASTER_WORKERS = [{"name": "Acosta, Celina Alejandra", "rut": "23.430.941-2", "email": "celina.acosta@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Alvarez, Claudio Pablo", "rut": "15.522.092-9", "email": "Claudio.Alvarez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Alvarez, Gregorio Carlos", "rut": "17.152.620-5", "email": "Gregorio.Alvarez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Alvarez, Jorge Andres", "rut": "19.859.550-0", "email": "Jorge.Alvarez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Arroyo, Esteban Enoc", "rut": "20.364.135-4", "email": "Esteban.Arroyo@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Arroyo, Sergio Andres", "rut": "19.109.716-5", "email": "Sergio.Arroyo@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Arteaga, Antonio Jose", "rut": "25.674.517-8", "email": "antonio.artega@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Badilla, Nestor Abner", "rut": "15.224.404-5", "email": "Nestor.badilla@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Betancur, Carlos Alejandro", "rut": "15.178.759-2", "email": "Carlos.Betancur@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Cabrera, Jorge Andres", "rut": "15.764.930-2", "email": "Jorge.Cabrera@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Candia, Carlos Salvador", "rut": "17.987.749-k", "email": "Carlos.Candia@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Candia, Eleodoro Antonio", "rut": "12.545.616-2", "email": "Eleodoro.Candia@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Castro, Diego Alberto", "rut": "16.971.571-8", "email": "Diego.Castro@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Catalan, Diego Ignacio", "rut": "20.277.297-8", "email": "Diego.Catalan@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Concha, Bastian Alex", "rut": "17.900.357-0", "email": "Bastian.Concha@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Contreras, Alejandro Esteban", "rut": "16.901.566-k", "email": "Alejandro.Contreras@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Contreras, Francisco Armando", "rut": "16.999.728-4", "email": "Francisco.Contreras@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Contreras, Jorge Ricardo", "rut": "15.756.280-0", "email": "Jorge.Contreras@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Daroch, Diego Antonio", "rut": "19.816.656-1", "email": "Diego.Daroch@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Delgadillo, Diego", "rut": "18.134.803-8", "email": "Diego.Delgadillo@sapri.cl", "area": "Personal de obra", "subarea": "Terreno"}, {"name": "Eriz, Rebeca Ester", "rut": "20.386.396-9", "email": "Rebeca.Eriz@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Espinoza, Juan Pablo", "rut": "17.058.535-6", "email": "Juan.Espinoza@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Fierro, Isaac Humberto", "rut": "13.134.374-4", "email": "Isaac.Fierro@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Figueroa, Jimy Alejandro", "rut": "16.396.208-k", "email": "Jimy.Figueroa@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Francino, Mario Alexander", "rut": "18.745.596-0", "email": "Mario.Francino@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Fresco, Mabel", "rut": "28.843.101-9", "email": "Mabel.Fresco@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Fuentes, Jonathan Eric", "rut": "17.221.547-5", "email": "Jonathan.Fuentes@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Gacitua, Nicolas Adolfo", "rut": "18.489.902-7", "email": "Nicolas.Gacitua@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Geldsetzer, Ricardo Fernando", "rut": "7.818.295-4", "email": "Ricardo.Geldsetzer@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Gonzalez, Daniel Leandro", "rut": "20.037.742-7", "email": "Daniel.Gonzalez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "González, Jose Luis", "rut": "21.759.643-2", "email": "Jose.Gonzalez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Gonzalez, Ricardo Moises", "rut": "10.525.478-4", "email": "Ricardo.Geldsetzer@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Hernandez, Javier Ignacio", "rut": "20.039.692-8", "email": "Javier.Hernandez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Jara, Sebastian Alonso", "rut": "19.814.769-9", "email": "Sebastian.Jara@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Leal, Felipe Alfonso", "rut": "17.416.086-4", "email": "Felipe.Leal@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Marusic, Nicky Dragoslav", "rut": "17.587.233-7", "email": "Nicky.Marusic@sapri.cl", "area": "Personal de obra", "subarea": "Terreno"}, {"name": "Medina, Luis Alejandro", "rut": "13.389.108-0", "email": "Luis.Medina@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Mendoza, Darwin Antonio", "rut": "18.944.851-1", "email": "Darwin.Mendoza@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Morales, Gabriel Alejandro", "rut": "18.972.333-4", "email": "Gabriel.Morales@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Mosqueira, Gaspar Eugenio", "rut": "21.740.705-2", "email": "Gaspar.Mosqueira@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Mosqueira, Luis Eugenio", "rut": "13.372.941-0", "email": "Luis.Mosqueira@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Nachar, Jose Sebastian", "rut": "18.319.196-9", "email": "Jose.Nachar@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Ocaranza, Marcos Andres", "rut": "15.053.328-7", "email": "Marcos.Ocaranza@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Ortega, Renato Ignacio", "rut": "20.488.380-7", "email": "Renato.Ortega@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Paillalef, Franco Alexander", "rut": "19.119.195-1", "email": "Franco.Paillalef@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Palma, Tamara Alejandra", "rut": "16.818.827-7", "email": "Tamara.Palma@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Pino, Luis Alejandro", "rut": "16.515.964-0", "email": "Luis.Pino@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Quezada, Antonio Adolfo", "rut": "20.112.023-3", "email": "Antonio.Quezada@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Quezada, Luciano Esteban", "rut": "17.205.022-0", "email": "Luciano.Quezada@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Romero, Alvaro Marcel", "rut": "10.058.739-4", "email": "Alvaro.Romero@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Romero, Alvaro Martin", "rut": "19.597.310-5", "email": "Alvaro.Romero@sapri.cl", "area": "Personal de planta", "subarea": "Oficina"}, {"name": "Saez, Cristopher Leonardo", "rut": "19.333.006-1", "email": "Cristopher.Saez@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Salas, Lucas Mauricio", "rut": "20.579.494-8", "email": "Lucas.Salas@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Sanhueza, Francisco Alejandro", "rut": "17.565.654-5", "email": "Francisco.Sanhueza@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Soto, Victor Luis", "rut": "16.516.688-4", "email": "Victor.Soto@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Toro, Juan Pablo", "rut": "17.871.940-8", "email": "Juan.Toro@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Venegas, Fabian Mauricio", "rut": "20.467.028-5", "email": "Fabian.Venegas@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Vidal, Nelson Ricardo", "rut": "9.644.016-2", "email": "Nelson.Vidal@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Villanueva, Bernardo Rodrigo", "rut": "8.695.405-2", "email": "Bernardo.Villanueva@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}, {"name": "Vilugron, Matias Gabriel", "rut": "17.540.608-5", "email": "Matias.Vilugron@sapri.cl", "area": "Personal de planta", "subarea": "Terreno"}];
+let RAW={controles:[],respuestas:[],desvios:[],evidencias:[],reacciones:[],somnolencia:[],alertas:[],configuracion:[],movimientos:[]};
+let DATA={controles:[],desvios:[],reaccion:[],somnolencia:[],alertas:[],movimientos:[]};
+
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function loginDemo(){DATA=JSON.parse(JSON.stringify(DEMO));$("loginBox").classList.add("hidden");$("adminApp").classList.remove("hidden");render()}
+$("btnDemo").addEventListener("click",loginDemo);
+$("btnLogin").addEventListener("click",async()=>{
+  const email=$("adminEmail").value.trim();
+  const pass=$("adminPass").value;
+  if(!email||!pass){$("loginMsg").textContent="Ingresa correo y clave.";return;}
+  $("loginMsg").textContent="Ingresando...";
+  try{
+    await adminLogin(email,pass);
+    $("loginBox").classList.add("hidden");
+    $("adminApp").classList.remove("hidden");
+    await loadRealData();
+    await cargarConfiguracionAlertas();
+    setInterval(()=>loadRealData().catch(console.error),30000);
+  }catch(e){
+    $("loginMsg").textContent="No se pudo ingresar: "+e.message;
+  }
+});
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(b.dataset.p).classList.add("active");
+}));
+function norm(v){return String(v??"").trim().toUpperCase();}
+function fechaSolo(v){return String(v||"").slice(0,10);}
+
+function getFiltros(){
+  return {
+    desde:$("fDesde").value||"",
+    hasta:$("fHasta").value||"",
+    trabajador:norm($("fTrabajador").value),
+    patente:norm($("fPatente").value).replace(/\s/g,""),
+    falla:norm($("fFalla").value),
+    riesgo:norm($("fRiesgo").value)
+  };
+}
+
+function fechaOK(fecha,f){
+  const d=fechaSolo(fecha);
+  if(f.desde && d<f.desde)return false;
+  if(f.hasta && d>f.hasta)return false;
+  return true;
+}
+function trabajadorOK(v,f){return !f.trabajador || norm(v).includes(f.trabajador);}
+function patenteOK(v,f){return !f.patente || norm(v).replace(/\s/g,"").includes(f.patente);}
+function fallaOK(x,f){
+  if(!f.falla)return true;
+  return [x.item,x.item_codigo,x.descripcion,x.tipo,x.mensaje].some(v=>norm(v).includes(f.falla));
+}
+function riesgoOK(v,f){return !f.riesgo || norm(v)===f.riesgo;}
+
+function datosFiltrados(){
+  const f=getFiltros();
+
+  const controles=DATA.controles.filter(x=>
+    fechaOK(x.fecha,f) &&
+    trabajadorOK(x.trabajador,f) &&
+    patenteOK(x.patente,f) &&
+    riesgoOK(x.riesgo,f)
+  );
+
+  const foliosPermitidos=new Set(controles.map(x=>x.folio));
+  const hayFiltroControl=!!(f.desde||f.hasta||f.trabajador||f.patente||f.riesgo);
+
+  const desvios=DATA.desvios.filter(x=>{
+    const control=DATA.controles.find(c=>c.folio===x.folio)||{};
+    return fechaOK(x.fecha,f) &&
+      trabajadorOK(control.trabajador,f) &&
+      patenteOK(x.patente||control.patente,f) &&
+      fallaOK(x,f) &&
+      riesgoOK(x.criticidad,f);
+  });
+
+  const reaccion=DATA.reaccion.filter(x=>
+    fechaOK(x.fecha,f) &&
+    trabajadorOK(x.trabajador,f) &&
+    patenteOK(x.patente,f) &&
+    riesgoOK(x.riesgo,f)
+  );
+
+  const somnolencia=DATA.somnolencia.filter(x=>
+    fechaOK(x.fecha,f) &&
+    trabajadorOK(x.trabajador,f) &&
+    patenteOK(x.patente,f) &&
+    riesgoOK(x.riesgo,f)
+  );
+
+  const alertas=DATA.alertas.filter(x=>
+    fechaOK(x.fecha,f) &&
+    trabajadorOK(x.trabajador,f) &&
+    patenteOK(x.patente,f) &&
+    fallaOK(x,f) &&
+    riesgoOK(x.nivel,f)
+  );
+
+  const movimientos=(DATA.movimientos||[]).filter(x=>
+    fechaOK(x.fecha,f) &&
+    trabajadorOK(x.trabajador,f) &&
+    patenteOK(x.patente,f) &&
+    (!f.falla || norm([x.tipo_movimiento,x.origen_destino,x.companero,x.detalle,x.descripcion_danios].join(" ")).includes(f.falla))
+  );
+
+  return {f,controles,desvios,reaccion,somnolencia,alertas,movimientos};
+}
+
+function fechaChile(v){
+  if(!v) return "—";
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime())) return String(v);
+  return new Intl.DateTimeFormat("es-CL",{
+    timeZone:"America/Santiago",
+    day:"2-digit",month:"2-digit",year:"numeric",
+    hour:"2-digit",minute:"2-digit",hour12:false
+  }).format(d);
+}
+function movementPhotoLabel(c){
+  return ({
+    FRONTAL:"Frontal",TRASERA:"Trasera",
+    COSTADO_CONDUCTOR:"Costado conductor",
+    COSTADO_COPILOTO:"Costado copiloto",
+    TABLERO:"Tablero / kilometraje",
+    ASIENTOS_DEL:"Asientos delanteros",
+    ASIENTOS_TRAS:"Asientos traseros",
+    CARGA:"Maletero / carga",
+    DANIO:"Daño / anomalía"
+  })[String(c||"").toUpperCase()] || String(c||"Foto").replaceAll("_"," ");
+}
+function toggleMovementFolder(id){
+  const gal=document.getElementById("movGal-"+id);
+  const btn=document.getElementById("movBtn-"+id);
+  if(!gal||!btn)return;
+  const open=gal.classList.toggle("open");
+  btn.classList.toggle("open",open);
+  btn.textContent=open?"📂 Ocultar fotografías":"📁 Ver fotografías";
+}
+function render(){
+ const V=datosFiltrados();
+
+ $("kTotal").textContent=V.controles.length;
+ $("kBajo").textContent=V.controles.filter(x=>x.riesgo==="BAJO").length;
+ $("kMedio").textContent=V.controles.filter(x=>x.riesgo==="MEDIO").length;
+ $("kAlto").textContent=V.controles.filter(x=>x.riesgo==="ALTO").length;
+ $("kDesv").textContent=V.desvios.filter(x=>x.estado!=="CERRADA").length;
+ $("kAlertas").textContent=V.alertas.filter(x=>String(x.estado||"").toUpperCase()!=="CERRADA").length;
+
+ const activos=[
+   V.f.desde||V.f.hasta ? "fecha" : "",
+   V.f.trabajador ? "trabajador" : "",
+   V.f.patente ? "patente" : "",
+   V.f.falla ? "falla/ítem" : "",
+   V.f.riesgo ? "riesgo "+V.f.riesgo : ""
+ ].filter(Boolean);
+ $("filterInfo").textContent=activos.length
+   ? `Filtros activos: ${activos.join(" · ")}. Controles: ${V.controles.length} · Desvíos: ${V.desvios.length} · Alertas: ${V.alertas.length}.`
+   : "Mostrando todos los registros.";
+
+ $("alertList").innerHTML=V.alertas.length?V.alertas.map(a=>{
+   const est=String(a.estado||"PENDIENTE").toUpperCase();
+   const actions=est==="CERRADA" ? "" : `<div class="manage-actions" style="margin-top:8px">${est==="PENDIENTE"?`<button class="manage-btn attend" onclick="gestionarAlerta('${a.id}','ATENDER')">✓ Atender</button>`:""}<button class="manage-btn close" onclick="gestionarAlerta('${a.id}','CERRAR')">✓ Cerrar</button></div>`;
+   const cierre=a.observaciones_cierre?`<div class="closure-note"><b>Cierre:</b> ${esc(a.observaciones_cierre)}${a.cerrada_por?" · "+esc(a.cerrada_por):""}</div>`:"";
+   return `<div class="alertcard ${a.nivel==="MEDIO"?"medium":""}"><div><span class="badge ${a.nivel}">${a.nivel}</span> <b>${esc(a.tipo)}</b> · ${esc(a.fecha)} · <span class="state-chip ${stateClass(est)}">${esc(est)}</span></div><div style="margin-top:6px">${esc(a.mensaje)}</div><div class="muted">${esc(a.trabajador)} · ${esc(a.patente)} · ${esc(a.folio)}</div>${cierre}${actions}</div>`;
+ }).join(""):'<div class="muted">Sin alertas para los filtros seleccionados.</div>';
+
+ $("tbControles").innerHTML=V.controles.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.cargo)}</td><td><b>${esc(x.patente)}</b></td><td>${esc(x.vehiculo)}</td><td>${esc(x.servicio)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.gps)}</td></tr>`).join("");
+
+ $("tbDesvios").innerHTML=V.desvios.map(x=>{
+   const gal=(x.fotos&&x.fotos.length)
+     ? `<div class="photo-gallery">${x.fotos.map((f,i)=>`<div class="photo-wrap"><img class="photo" src="${f.url}" alt="${esc(f.nombre)}" title="${esc(f.nombre)}"><span class="photo-count">${i+1}/${x.fotos.length}</span></div>`).join("")}</div>`
+     : "—";
+   const crit=norm(x.criticidad);
+   const est=String(x.estado||"ABIERTA").toUpperCase();
+   const actions=est==="CERRADA"?`<button class="manage-btn reopen" onclick="gestionarDesvio('${x.id}','REABRIR')">↺ Reabrir</button>`:`${est==="ABIERTA"?`<button class="manage-btn attend" onclick="gestionarDesvio('${x.id}','GESTION')">En gestión</button>`:""}<button class="manage-btn close" onclick="gestionarDesvio('${x.id}','CERRAR')">✓ Cerrar</button>`;
+   const cierre=x.observaciones_cierre?`<div class="closure-note"><b>Cierre:</b> ${esc(x.observaciones_cierre)}${x.cerrada_por?" · "+esc(x.cerrada_por):""}</div>`:"";
+   return `<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td><b>${esc(x.patente)}</b></td><td>${esc(x.item)}</td><td>${esc(x.descripcion)}</td><td><span class="badge ${crit}">${esc(x.criticidad)}</span></td><td><span class="state-chip ${stateClass(est)}">${esc(est)}</span>${cierre}</td><td>${gal}</td><td><div class="manage-actions">${actions}</div></td></tr>`;
+ }).join("");
+
+ $("tbReaccion").innerHTML=V.reaccion.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.serie)}</td><td>${esc(x.aciertos)}</td><td>${esc(x.errores)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.bloqueo)}</td></tr>`).join("");
+
+ $("tbSomn").innerHTML=V.somnolencia.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.folio)}</td><td>${esc(x.trabajador)}</td><td>${esc(x.puntaje)}</td><td><span class="badge ${x.riesgo}">${x.riesgo}</span></td><td>${esc(x.horas)}</td><td>${esc(x.cansancio)}</td></tr>`).join("");
+
+ if($("tbMovimientos")){
+   $("tbMovimientos").innerHTML=(V.movimientos||[]).length ? V.movimientos.map((x,i)=>{
+     const mov=String(x.tipo_movimiento||"").toUpperCase();
+     const movClass=mov.includes("ENTREGO")?"ENTREGO":"RECIBO";
+     const detalle=[x.companero,x.detalle].filter(Boolean).join(" · ")||"—";
+     const danio=String(x.presenta_danios||"").toUpperCase()==="SI";
+     const danioTxt=danio ? `Sí${x.descripcion_danios?": "+esc(x.descripcion_danios):""}` : "No";
+     const conf=x.confirmado ? `✅ Confirmado${x.confirmado_en?" · "+fechaChile(x.confirmado_en):""}` : "Pendiente";
+     const fotos=(x.fotos||[]);
+     const gallery=fotos.length
+       ? `<div class="movement-folder"><button type="button" class="folder-btn" id="movBtn-${i}" onclick="toggleMovementFolder(${i})">📁 Ver fotografías (${fotos.length})</button><div class="movement-gallery" id="movGal-${i}">${fotos.map(f=>`<div class="movement-photo"><img class="photo" src="${f.url}" alt="${esc(movementPhotoLabel(f.codigo))}" title="${esc(movementPhotoLabel(f.codigo))}"><span>${esc(movementPhotoLabel(f.codigo))}</span></div>`).join("")}</div></div>`
+       : "Sin fotografías";
+     return `<tr>
+       <td>${esc(fechaChile(x.fecha))}</td>
+       <td><span class="mov-badge ${movClass}">${esc(mov||"MOVIMIENTO")}</span></td>
+       <td><b>${esc(x.patente)}</b></td>
+       <td>${esc(x.trabajador)}</td>
+       <td>${esc(x.origen_destino||"—")}</td>
+       <td>${esc(detalle)}</td>
+       <td>${esc(x.kilometraje??"—")}</td>
+       <td class="${danio?"damage-yes":"damage-no"}">${danioTxt}</td>
+       <td>${conf}</td>
+       <td>${gallery}</td>
+     </tr>`;
+   }).join("") : `<tr><td colspan="10" class="muted">Aún no hay registros de entrega/recepción para los filtros seleccionados.</td></tr>`;
+ }
+
+ document.querySelectorAll(".photo").forEach(im=>im.addEventListener("click",()=>{$("modalImg").src=im.src;$("photoModal").classList.add("open")}));
+}
+$("photoModal").addEventListener("click",()=>$("photoModal").classList.remove("open"));
+
+["fDesde","fHasta","fTrabajador","fPatente","fFalla","fRiesgo"].forEach(id=>{
+  const el=$(id);
+  el.addEventListener("input",render);
+  el.addEventListener("change",render);
+});
+$("btnLimpiar").addEventListener("click",()=>{
+  ["fDesde","fHasta","fTrabajador","fPatente","fFalla"].forEach(id=>$(id).value="");
+  $("fRiesgo").value="";
+  render();
+});
+
+
+
+async function cargarConfiguracionAlertas(){
+  try{
+    const rows=await api("/rest/v1/configuracion_alertas?select=*&limit=1");
+    if(rows && rows[0]){
+      const c=rows[0];
+      $("cfgWhatsApp").value=c.whatsapp_numero||"";
+      $("cfgNombre").value=c.nombre_destinatario||"";
+      $("cfgVehiculo").checked=c.alerta_vehiculo!==false;
+      $("cfgSomnolencia").checked=c.alerta_somnolencia!==false;
+      $("cfgReaccion").checked=c.alerta_reaccion!==false;
+      $("cfgGeneral").checked=c.alerta_riesgo_general!==false;
+    }
+  }catch(e){
+    $("cfgMsg").textContent="Configuración aún no creada en Supabase.";
+  }
+}
+
+async function guardarConfiguracionAlertas(){
+  const numero=$("cfgWhatsApp").value.replace(/\D/g,"");
+  if(numero.length<8){
+    $("cfgMsg").textContent="Ingresa un número válido con código de país.";
+    return;
+  }
+  const payload={
+    id:1,
+    whatsapp_numero:numero,
+    nombre_destinatario:$("cfgNombre").value.trim(),
+    alerta_vehiculo:$("cfgVehiculo").checked,
+    alerta_somnolencia:$("cfgSomnolencia").checked,
+    alerta_reaccion:$("cfgReaccion").checked,
+    alerta_riesgo_general:$("cfgGeneral").checked,
+    actualizado_por:sessionStorage.getItem("sapriAdminEmail")||"",
+    actualizado_en:new Date().toISOString()
+  };
+  try{
+    const res=await fetch(SUPABASE_URL+"/rest/v1/configuracion_alertas?on_conflict=id",{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+accessToken,
+        "Content-Type":"application/json",
+        "Prefer":"resolution=merge-duplicates,return=representation"
+      },
+      body:JSON.stringify(payload)
+    });
+    const txt=await res.text();
+    if(!res.ok) throw new Error(txt);
+    $("cfgMsg").textContent="✅ Configuración guardada correctamente.";
+  }catch(e){
+    $("cfgMsg").textContent="No se pudo guardar: "+e.message;
+  }
+}
+
+$("btnGuardarConfig").addEventListener("click",guardarConfiguracionAlertas);
+
+$("btnProbarWhatsApp").addEventListener("click",()=>{
+  const numero=$("cfgWhatsApp").value.replace(/\D/g,"");
+  if(numero.length<8){$("cfgMsg").textContent="Primero ingresa un número válido.";return;}
+  const texto=encodeURIComponent("✅ Prueba de configuración SAPRI: este número recibirá las alertas del Control Preventivo de Conducción.");
+  window.open("https://wa.me/"+numero+"?text="+texto,"_blank");
+});
+
+$("btnExcel").addEventListener("click",async()=>{
+  try{
+    const XLSX=await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+    const wb=XLSX.utils.book_new();
+
+    const resumen=[
+      {Indicador:"Fecha de exportación",Valor:new Date().toLocaleString("es-CL")},
+      {Indicador:"Total controles",Valor:RAW.controles.length},
+      {Indicador:"Riesgo BAJO",Valor:RAW.controles.filter(x=>x.riesgo_general==="BAJO").length},
+      {Indicador:"Riesgo MEDIO",Valor:RAW.controles.filter(x=>x.riesgo_general==="MEDIO").length},
+      {Indicador:"Riesgo ALTO",Valor:RAW.controles.filter(x=>x.riesgo_general==="ALTO").length},
+      {Indicador:"Desviaciones abiertas",Valor:RAW.desvios.filter(x=>x.estado!=="CERRADA").length},
+      {Indicador:"Evidencias fotográficas",Valor:RAW.evidencias.length},
+      {Indicador:"Alertas pendientes",Valor:RAW.alertas.filter(x=>x.estado!=="CERRADA").length}
+    ];
+
+    const evidenciasExport=RAW.evidencias.map(e=>({
+      ...e,
+      referencia_foto:"Bucket privado Supabase: evidencias/"+(e.storage_path||"")
+    }));
+
+    const sets=[
+      ["Resumen",resumen],
+      ["Controles",RAW.controles],
+      ["Checklist",RAW.respuestas],
+      ["Desviaciones",RAW.desvios],
+      ["Evidencias",evidenciasExport],
+      ["Somnolencia",RAW.somnolencia],
+      ["Reacciones",RAW.reacciones],
+      ["Alertas",RAW.alertas],
+      ["Trabajadores",MASTER_WORKERS],
+      ["Vehiculos",MASTER_VEHICLES],
+      ["Config_Alertas",RAW.configuracion]
+    ];
+
+    for(const [name,rows] of sets){
+      const safeRows=(rows&&rows.length)?rows:[{Sin_datos:"Sin registros al momento de la exportación"}];
+      const ws=XLSX.utils.json_to_sheet(safeRows);
+      const range=XLSX.utils.decode_range(ws["!ref"]||"A1:A1");
+      const widths=[];
+      for(let C=range.s.c;C<=range.e.c;C++){
+        let max=10;
+        for(let R=range.s.r;R<=Math.min(range.e.r,200);R++){
+          const cell=ws[XLSX.utils.encode_cell({r:R,c:C})];
+          if(cell&&cell.v!=null) max=Math.max(max,String(cell.v).length+2);
+        }
+        widths.push({wch:Math.min(max,42)});
+      }
+      ws["!cols"]=widths;
+      ws["!autofilter"]={ref:ws["!ref"]||"A1:A1"};
+      XLSX.utils.book_append_sheet(wb,ws,name);
+    }
+
+    XLSX.writeFile(wb,"SAPRI_Control_Conduccion_Trazabilidad_Completa.xlsx");
+  }catch(e){
+    console.error(e);
+    alert("No se pudo generar el Excel. Revisa conexión a internet y vuelve a intentar.");
+  }
+});
+async function cargarAlertasCriticas(){
+  const tbody = document.getElementById("tablaAlertasCriticas");
+  if(!tbody) return;
+
+  try{
+    const alertas = await api(
+      "/rest/v1/alertas_criticas?select=*&order=fecha_hora.desc",
+      { method:"GET" }
+    );
+
+    const datos = Array.isArray(alertas) ? alertas : [];
+
+    document.getElementById("alertasPendientes").textContent =
+      datos.filter(a => a.estado === "PENDIENTE").length;
+
+    document.getElementById("alertasAtendidas").textContent =
+      datos.filter(a => a.estado === "ATENDIDA").length;
+
+    document.getElementById("alertasCerradas").textContent =
+      datos.filter(a => a.estado === "CERRADA").length;
+
+    document.getElementById("alertasAltas").textContent =
+      datos.filter(a => (a.gravedad || "").toUpperCase() === "ALTO").length;
+
+    if(datos.length === 0){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="padding:16px;text-align:center;color:#667085;">
+            No hay alertas registradas
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = datos.map(a => {
+
+      const fechaChile = a.fecha_hora
+        ? new Intl.DateTimeFormat("es-CL", {
+            timeZone: "America/Santiago",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }).format(new Date(a.fecha_hora))
+        : "-";
+
+      const gravedad = (a.gravedad || "").toUpperCase();
+
+      const colorGravedad =
+        gravedad === "ALTO" ? "#b42318" :
+        gravedad === "MEDIO" ? "#b54708" :
+        "#027a48";
+
+      const estado = a.estado || "PENDIENTE";
+      const gestionCritica = estado === "CERRADA"
+        ? ""
+        : (estado === "PENDIENTE"
+            ? `<button class="manage-btn attend" onclick="gestionarAlertaCritica('${a.id}','ATENDER')">✓ Atender</button>`
+            : "")
+          + `<button class="manage-btn close" onclick="gestionarAlertaCritica('${a.id}','CERRAR')">✓ Cerrar</button>`;
+      const cierreCritico = a.observaciones_cierre
+        ? `<div class="closure-note"><b>Cierre:</b> ${esc(a.observaciones_cierre)}${a.cerrada_por?" · "+esc(a.cerrada_por):""}</div>`
+        : "";
+
+      return `
+        <tr style="border-bottom:1px solid #e5e7eb;">
+          <td style="padding:10px;white-space:nowrap;">${fechaChile}</td>
+          <td style="padding:10px;">${a.tipo || "-"}</td>
+          <td style="padding:10px;">
+            <strong style="color:${colorGravedad};">
+              ${gravedad || "-"}
+            </strong>
+          </td>
+          <td style="padding:10px;">${a.conductor || "-"}</td>
+          <td style="padding:10px;">${a.patente || "-"}</td>
+          <td style="padding:10px;">${a.centro_costo || "-"}</td>
+          <td style="padding:10px;">${a.mensaje || "-"}</td>
+          <td style="padding:10px;"><span class="state-chip ${stateClass(estado)}">${estado}</span>${cierreCritico}</td>
+          <td style="padding:10px;"><div class="manage-actions">${gestionCritica}</div></td>
+        </tr>
+      `;
+    }).join("");
+
+  }catch(error){
+    console.error("Error cargando alertas críticas:", error);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" style="padding:16px;text-align:center;color:#b42318;">
+          No se pudieron cargar las alertas
+        </td>
+      </tr>`;
+  }
+}
+bindAdminFilters();
+window.addEventListener("DOMContentLoaded", cargarAlertasCriticas);
+</script>
+<!-- ===== ALERTAS CRÍTICAS SAPRI ===== -->
+<section id="alertasCriticasPanel" style="margin:20px 0;">
+  <div style="
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);
+  ">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <h2 style="margin:0;font-size:20px;">🚨 Alertas Críticas</h2>
+        <div style="font-size:12px;color:#667085;margin-top:4px;">
+          Control preventivo de conducción
+        </div>
+      </div>
+
+      <button onclick="cargarAlertasCriticas()"
+        style="border:0;border-radius:10px;padding:10px 14px;cursor:pointer;">
+        Actualizar
+      </button>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:10px;
+      margin-top:16px;
+    ">
+      <div class="card">
+        <strong id="alertasPendientes">0</strong><br>
+        <small>Pendientes</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasAtendidas">0</strong><br>
+        <small>Atendidas</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasCerradas">0</strong><br>
+        <small>Cerradas</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasAltas">0</strong><br>
+        <small>Riesgo ALTO</small>
+      </div>
+    </div>
+
+    <div style="overflow:auto;margin-top:16px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="text-align:left;border-bottom:2px solid #e5e7eb;">
+            <th style="padding:10px;">Fecha / Hora</th>
+            <th style="padding:10px;">Tipo</th>
+            <th style="padding:10px;">Gravedad</th>
+            <th style="padding:10px;">Conductor</th>
+            <th style="padding:10px;">Patente</th>
+            <th style="padding:10px;">Centro Costo</th>
+            <th style="padding:10px;">Mensaje</th>
+            <th style="padding:10px;">Estado</th>
+            <th style="padding:10px;">Gestión</th>
+          </tr>
+        </thead>
+
+        <tbody id="tablaAlertasCriticas">
+          <tr>
+            <td colspan="9" style="padding:16px;text-align:center;color:#667085;">
+              Cargando alertas...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+<!-- ===== FIN ALERTAS CRÍTICAS ===== -->
+</body></html>
