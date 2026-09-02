@@ -1,0 +1,18 @@
+{
+  "name": "SAPRI Control Preventivo de Conducción",
+  "short_name": "SAPRI Control",
+  "description": "Checklist vehicular, recepción/entrega, somnolencia y prueba de reacción SAPRI",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5f7",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "./LOGO%20SAPRI.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
