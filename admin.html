@@ -746,7 +746,172 @@ $("btnExcel").addEventListener("click",async()=>{
     alert("No se pudo generar el Excel. Revisa conexión a internet y vuelve a intentar.");
   }
 });
+async function cargarAlertasCriticas(){
+  const tbody = document.getElementById("tablaAlertasCriticas");
+  if(!tbody) return;
 
+  try{
+    const alertas = await api(
+      "/rest/v1/alertas_criticas?select=*&order=fecha_hora.desc",
+      { method:"GET" }
+    );
+
+    const datos = Array.isArray(alertas) ? alertas : [];
+
+    document.getElementById("alertasPendientes").textContent =
+      datos.filter(a => a.estado === "PENDIENTE").length;
+
+    document.getElementById("alertasAtendidas").textContent =
+      datos.filter(a => a.estado === "ATENDIDA").length;
+
+    document.getElementById("alertasCerradas").textContent =
+      datos.filter(a => a.estado === "CERRADA").length;
+
+    document.getElementById("alertasAltas").textContent =
+      datos.filter(a => (a.gravedad || "").toUpperCase() === "ALTO").length;
+
+    if(datos.length === 0){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="padding:16px;text-align:center;color:#667085;">
+            No hay alertas registradas
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = datos.map(a => {
+
+      const fechaChile = a.fecha_hora
+        ? new Intl.DateTimeFormat("es-CL", {
+            timeZone: "America/Santiago",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }).format(new Date(a.fecha_hora))
+        : "-";
+
+      const gravedad = (a.gravedad || "").toUpperCase();
+
+      const colorGravedad =
+        gravedad === "ALTO" ? "#b42318" :
+        gravedad === "MEDIO" ? "#b54708" :
+        "#027a48";
+
+      const estado = a.estado || "PENDIENTE";
+
+      return `
+        <tr style="border-bottom:1px solid #e5e7eb;">
+          <td style="padding:10px;white-space:nowrap;">${fechaChile}</td>
+          <td style="padding:10px;">${a.tipo || "-"}</td>
+          <td style="padding:10px;">
+            <strong style="color:${colorGravedad};">
+              ${gravedad || "-"}
+            </strong>
+          </td>
+          <td style="padding:10px;">${a.conductor || "-"}</td>
+          <td style="padding:10px;">${a.patente || "-"}</td>
+          <td style="padding:10px;">${a.centro_costo || "-"}</td>
+          <td style="padding:10px;">${a.mensaje || "-"}</td>
+          <td style="padding:10px;"><strong>${estado}</strong></td>
+        </tr>
+      `;
+    }).join("");
+
+  }catch(error){
+    console.error("Error cargando alertas críticas:", error);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="padding:16px;text-align:center;color:#b42318;">
+          No se pudieron cargar las alertas
+        </td>
+      </tr>`;
+  }
+}
 bindAdminFilters();
+window.addEventListener("DOMContentLoaded", cargarAlertasCriticas);
 </script>
+<!-- ===== ALERTAS CRÍTICAS SAPRI ===== -->
+<section id="alertasCriticasPanel" style="margin:20px 0;">
+  <div style="
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);
+  ">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div>
+        <h2 style="margin:0;font-size:20px;">🚨 Alertas Críticas</h2>
+        <div style="font-size:12px;color:#667085;margin-top:4px;">
+          Control preventivo de conducción
+        </div>
+      </div>
+
+      <button onclick="cargarAlertasCriticas()"
+        style="border:0;border-radius:10px;padding:10px 14px;cursor:pointer;">
+        Actualizar
+      </button>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:10px;
+      margin-top:16px;
+    ">
+      <div class="card">
+        <strong id="alertasPendientes">0</strong><br>
+        <small>Pendientes</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasAtendidas">0</strong><br>
+        <small>Atendidas</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasCerradas">0</strong><br>
+        <small>Cerradas</small>
+      </div>
+
+      <div class="card">
+        <strong id="alertasAltas">0</strong><br>
+        <small>Riesgo ALTO</small>
+      </div>
+    </div>
+
+    <div style="overflow:auto;margin-top:16px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="text-align:left;border-bottom:2px solid #e5e7eb;">
+            <th style="padding:10px;">Fecha / Hora</th>
+            <th style="padding:10px;">Tipo</th>
+            <th style="padding:10px;">Gravedad</th>
+            <th style="padding:10px;">Conductor</th>
+            <th style="padding:10px;">Patente</th>
+            <th style="padding:10px;">Centro Costo</th>
+            <th style="padding:10px;">Mensaje</th>
+            <th style="padding:10px;">Estado</th>
+          </tr>
+        </thead>
+
+        <tbody id="tablaAlertasCriticas">
+          <tr>
+            <td colspan="8" style="padding:16px;text-align:center;color:#667085;">
+              Cargando alertas...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+<!-- ===== FIN ALERTAS CRÍTICAS ===== -->
 </body></html>
