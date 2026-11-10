@@ -1,0 +1,27 @@
+SAPRI · CHECKLIST VEHÍCULOS · PERSONAL DINÁMICO
+
+QUÉ CAMBIA
+- Administrador > Usuarios ahora permite agregar personal nuevo.
+- Nombre, RUT, cargo, correo, área y subárea quedan guardados en Supabase.
+- Se puede activar/desactivar el acceso sin borrar controles históricos.
+- El trabajador nuevo puede ingresar al checklist con su correo @sapri.cl.
+- La app conserva el maestro histórico existente como respaldo.
+- No se modifica la lógica de checklist, firma, PDF, fotos, somnolencia, reacción ni Entrega/Recepción.
+
+ORDEN DE INSTALACIÓN
+1. Supabase > SQL Editor > New query.
+2. Ejecutar completo: 01_SQL_PERSONAL_DINAMICO.sql
+3. En GitHub del checklist de vehículos:
+   - reemplazar index.html
+   - reemplazar administrador.html
+4. Mantener todos los demás archivos del repositorio.
+5. Abrir administrador.html > Usuarios.
+6. Agregar un trabajador de prueba.
+7. Abrir index.html en ventana incógnita e ingresar con el correo agregado.
+
+IMPORTANTE
+- El SQL autoriza administración para:
+  tamara.palma@sapri.cl
+  felipe.leal@sapri.cl
+  nicky.marusic@sapri.cl
+- El trabajador solo consulta su propio correo mediante RPC.
